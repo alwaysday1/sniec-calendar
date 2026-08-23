@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>上海新国际博览中心展会日历</title>
+    <style>
+      :root { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+      body { margin: 0; background: #f4f6f8; color: #17202a; }
+      main { width: min(720px, calc(100% - 32px)); margin: 10vh auto; }
+      article { background: white; border: 1px solid #dfe4ea; border-radius: 20px; padding: clamp(24px, 5vw, 48px); box-shadow: 0 18px 50px rgba(20, 35, 50, .08); }
+      .eyebrow { color: #1769aa; font-weight: 700; letter-spacing: .06em; }
+      h1 { margin: 10px 0 14px; font-size: clamp(30px, 6vw, 48px); line-height: 1.08; }
+      p { line-height: 1.75; color: #52606d; }
+      .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0; }
+      a.button, button { appearance: none; border: 0; border-radius: 12px; padding: 13px 18px; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
+      a.button { color: white; background: #1769aa; }
+      button { color: #1769aa; background: #eaf3fb; }
+      code { display: block; overflow-wrap: anywhere; padding: 14px; border-radius: 10px; background: #f0f3f5; color: #2d3a45; }
+      small { color: #7b8794; }
+      @media (prefers-color-scheme: dark) {
+        body { background: #101418; color: #edf2f7; }
+        article { background: #171d23; border-color: #2b3540; box-shadow: none; }
+        p, small { color: #aab6c2; }
+        code { background: #0e1318; color: #d7e0e8; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <article>
+        <div class="eyebrow">SNIEC · 龙阳路</div>
+        <h1>上海新国际博览中心展会日历</h1>
+        <p>非官方订阅日历。数据来自 SNIEC 官方展会日程，每 12 小时检查一次；适用于 Apple 日历、Google Calendar 和 Outlook。</p>
+        <div class="actions">
+          <a class="button" id="subscribe" href="sniec.ics">订阅到日历</a>
+          <button id="copy" type="button">复制订阅地址</button>
+          <a class="button" href="sniec.ics" download>下载 ICS</a>
+        </div>
+        <code id="url">正在生成订阅地址…</code>
+        <p id="status">正在读取最新日程…</p>
+        <small>展期默认显示为全天事件。开放时间、门票、登记及临时变更请以主办方和场馆公告为准。</small>
+      </article>
+    </main>
+    <script>
+      const feed = new URL("sniec.ics", location.href);
+      const webcal = feed.href.replace(/^https?:/, "webcal:");
+      document.querySelector("#url").textContent = feed.href;
+      document.querySelector("#subscribe").href = webcal;
+      document.querySelector("#copy").addEventListener("click", async (event) => {
+        await navigator.clipboard.writeText(feed.href);
+        event.currentTarget.textContent = "已复制";
+      });
+      fetch(new URL("events.json", location.href))
+        .then((response) => response.json())
+        .then((data) => {
+          const now = new Date();
+          const upcoming = data.events.filter((item) => new Date(`${item.end}T23:59:59+08:00`) >= now);
+          document.querySelector("#status").textContent = `当前收录 ${data.events.length} 场展会，其中 ${upcoming.length} 场尚未结束。`;
+        })
+        .catch(() => { document.querySelector("#status").textContent = "订阅文件已就绪。"; });
+    </script>
+  </body>
+</html>
