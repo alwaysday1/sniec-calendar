@@ -70,6 +70,12 @@ python -m unittest discover -s tests -v
 
 测试覆盖页面解析、页面结构异常、跨月去重、稳定 UID、全天事件结束日期以及 UTF-8 ICS 行折叠。
 
+## 定时任务保活
+
+GitHub 会自动停用长期没有仓库活动的公开仓库定时工作流。`.github/workflows/heartbeat.yml` 每月 1 日 UTC 03:37（上海时间 11:37）更新一次 `.github/heartbeat.md` 并提交到 `main`，避免日历刷新任务因 60 天无活动而停用。
+
+该工作流只申请 `contents: write` 权限。同月重复运行时状态文件内容不变，不会产生重复提交。GitHub Actions 的定时任务仍属于尽力而为机制；如果日历更新需要严格时效，应迁移到具有外部监控的定时服务。
+
 ## 使用边界
 
 本项目仅提供公开信息的技术转换，不保证信息完整、实时或准确。请以 [SNIEC 官网](https://www.sniec.net/)及主办方公告为准。

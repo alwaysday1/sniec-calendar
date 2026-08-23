@@ -1,0 +1,40 @@
+name: Keep scheduled workflows active
+
+on:
+  schedule:
+    - cron: "37 3 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: monthly-heartbeat
+  cancel-in-progress: false
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Update monthly heartbeat
+        shell: bash
+        run: |
+          month="$(date -u +'%Y-%m')"
+          printf '# Workflow heartbeat\n\nLast successful heartbeat (UTC): %s\n' "$month" > .github/heartbeat.md
+
+          git add -- .github/heartbeat.md
+          if git diff --cached --quiet; then
+            echo "Heartbeat is already current for $month"
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "chore: refresh workflow heartbeat for $month"
+          git pull --rebase origin main
+          git push origin HEAD:main
